@@ -25,10 +25,10 @@ class CNNBaseline(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(128 * 28 * 28, 256),
+            nn.Linear(128 * 28 * 28, 32),
             nn.ReLU(),
             nn.Dropout(0.4),
-            nn.Linear(256, num_classes)
+            nn.Linear(32, num_classes)
         )
 
     def forward(self, x):
