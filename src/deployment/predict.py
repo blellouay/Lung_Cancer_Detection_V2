@@ -4,6 +4,8 @@ import torch
 import torch.nn.functional as F
 from torchvision import transforms
 
+from src.utils.model_outputs import get_main_logits
+
 
 def get_prediction_transform(image_size, mean, std):
     return transforms.Compose([
@@ -20,7 +22,7 @@ def predict_image(model, image, transform, class_names, device):
 
     with torch.no_grad():
         outputs = model(image_tensor)
-        probabilities = F.softmax(outputs, dim=1)
+        probabilities = F.softmax(get_main_logits(outputs), dim=1)
 
     confidence, pred_idx = torch.max(probabilities, dim=1)
 

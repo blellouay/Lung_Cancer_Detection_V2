@@ -2,11 +2,15 @@ import os
 import torch
 import torch.nn as nn
 import numpy as np
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from pytorch_grad_cam.utils.image import show_cam_on_image
+from src.utils.model_outputs import get_main_logits
 
 
 def denormalize_image(tensor_image, mean, std):
@@ -31,6 +35,9 @@ def get_target_layer(model):
     conv_layers = []
 
     for name, module in model.named_modules():
+        if "AuxLogits" in name:
+            continue
+
         if isinstance(module, nn.Conv2d):
             conv_layers.append((name, module))
 
@@ -59,19 +66,16 @@ def generate_gradcam(
     model.to(device)
 
     input_tensor = image_tensor.unsqueeze(0).to(device)
+    input_tensor.requires_grad_(True)
 
     target_layers = [get_target_layer(model)]
     targets = [ClassifierOutputTarget(target_class)]
 
-    cam = GradCAM(
-        model=model,
-        target_layers=target_layers
-    )
-
-    grayscale_cam = cam(
-        input_tensor=input_tensor,
-        targets=targets
-    )[0]
+    with GradCAM(model=model, target_layers=target_layers) as cam:
+        grayscale_cam = cam(
+            input_tensor=input_tensor,
+            targets=targets
+        )[0]
 
     rgb_image = denormalize_image(image_tensor, mean, std)
 
@@ -117,7 +121,7 @@ def generate_gradcam_samples(
 
         with torch.no_grad():
             outputs = model(images)
-            preds = torch.argmax(outputs, dim=1)
+            preds = torch.argmax(get_main_logits(outputs), dim=1)
 
         for i in range(images.size(0)):
             if count >= num_images:

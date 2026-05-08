@@ -1,6 +1,8 @@
 import torch
 from tqdm import tqdm
 
+from src.utils.model_outputs import classification_loss, get_main_logits
+
 
 def train_one_epoch(model, train_loader, criterion, optimizer, device):
     model.train()
@@ -16,14 +18,14 @@ def train_one_epoch(model, train_loader, criterion, optimizer, device):
         optimizer.zero_grad()
 
         outputs = model(images)
-        loss = criterion(outputs, labels)
+        loss = classification_loss(outputs, labels, criterion)
 
         loss.backward()
         optimizer.step()
 
         running_loss += loss.item() * images.size(0)
 
-        preds = torch.argmax(outputs, dim=1)
+        preds = torch.argmax(get_main_logits(outputs), dim=1)
         correct += (preds == labels).sum().item()
         total += labels.size(0)
 
@@ -45,11 +47,11 @@ def validate_one_epoch(model, valid_loader, criterion, device):
             labels = batch["label"].to(device)
 
             outputs = model(images)
-            loss = criterion(outputs, labels)
+            loss = classification_loss(outputs, labels, criterion)
 
             running_loss += loss.item() * images.size(0)
 
-            preds = torch.argmax(outputs, dim=1)
+            preds = torch.argmax(get_main_logits(outputs), dim=1)
             correct += (preds == labels).sum().item()
             total += labels.size(0)
 

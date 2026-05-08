@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 import torch
 from torchview import draw_graph
 
@@ -29,6 +30,34 @@ def save_evaluation_results(
     config["normalize_mean"] = config.get("normalize_mean") or DEFAULT_NORMALIZE_MEAN
     config["normalize_std"] = config.get("normalize_std") or DEFAULT_NORMALIZE_STD
     config["image_size"] = config.get("image_size") or input_size[2]
+
+    # Keep every artifact for this run under the same model result folder.
+    gradcam_paths = results.get("gradcam_paths")
+    if gradcam_paths:
+        gradcam_dir = os.path.join(save_dir, "gradcam")
+        os.makedirs(gradcam_dir, exist_ok=True)
+
+        normalized_gradcam_paths = []
+        for gradcam_path in gradcam_paths:
+            if not gradcam_path:
+                continue
+
+            target_path = os.path.join(
+                gradcam_dir,
+                os.path.basename(gradcam_path)
+            )
+
+            if os.path.abspath(gradcam_path) != os.path.abspath(target_path):
+                try:
+                    if os.path.exists(gradcam_path):
+                        shutil.copy2(gradcam_path, target_path)
+                except Exception as e:
+                    print(f"Grad-CAM copy skipped for {gradcam_path}: {e}")
+
+            normalized_gradcam_paths.append(target_path)
+
+        results = dict(results)
+        results["gradcam_paths"] = normalized_gradcam_paths
 
     # =========================
     # Save model weights
@@ -184,6 +213,15 @@ def save_evaluation_results(
     # =========================
     # Deployment info
     # =========================
+    class_names_saved = bool(config["class_names"])
+    gradcam_available = (
+        "gradcam_paths" in results
+        and results["gradcam_paths"] is not None
+    )
+    min_per_class_recall = results.get("min_per_class_recall")
+    if min_per_class_recall is None and results.get("per_class_recall"):
+        min_per_class_recall = min(results["per_class_recall"].values())
+
     deployment_info = {
         "model_path": model_path,
 
@@ -198,20 +236,34 @@ def save_evaluation_results(
         "normalize_mean": config["normalize_mean"],
         "normalize_std": config["normalize_std"],
 
-        "deployment_ready": True,
+        "deployment_ready": (
+            os.path.exists(model_path)
+            and class_names_saved
+        ),
 
         "onnx_exported": False,
 
-        "gradcam_available": (
-            "gradcam_paths" in results
-            and results["gradcam_paths"] is not None
+        "gradcam_available": gradcam_available,
+        "prediction_demo_ready": (
+            os.path.exists(model_path)
+            and class_names_saved
         ),
+        "readiness_checks": {
+            "model_pth_exists": os.path.exists(model_path),
+            "class_names_saved": class_names_saved,
+            "gradcam_available": gradcam_available,
+            "prediction_demo_ready": (
+                os.path.exists(model_path)
+                and class_names_saved
+            )
+        },
 
         "medical_thresholds": {
             "minimum_recall": 0.85,
             "current_recall": results.get("recall_macro"),
+            "minimum_per_class_recall": min_per_class_recall,
             "passes_recall_threshold": (
-                results.get("recall_macro", 0) >= 0.85
+                (min_per_class_recall or 0) >= 0.85
             )
         }
     }
