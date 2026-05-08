@@ -5,42 +5,50 @@ def get_train_transforms(image_size: int = 224):
     """
     Training transforms for CT scan images.
 
-    Includes light augmentation suitable for medical data.
+    Safe medical augmentation:
+    - light rotation
+    - light translation / scale
+    - optional horizontal flip
+    - no color distortion
+    - no random erase
     """
 
-    transform = transforms.Compose([
-        # Resize to model input size
+    return transforms.Compose([
         transforms.Resize((image_size, image_size)),
 
-        # Light augmentation (safe)
-        transforms.RandomRotation(degrees=10),
+        transforms.RandomApply([
+            transforms.RandomAffine(
+                degrees=7,
+                translate=(0.03, 0.03),
+                scale=(0.95, 1.05)
+            )
+        ], p=0.5),
+
         transforms.RandomHorizontalFlip(p=0.5),
 
-        # Convert to tensor
         transforms.ToTensor(),
 
-        # Normalize (for pretrained models like ResNet/EfficientNet)
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225]
         ),
     ])
-
-    return transform
 
 
 def get_eval_transforms(image_size: int = 224):
     """
-    Validation / Test transforms (NO augmentation).
+    Validation / test transforms.
+
+    No augmentation here.
     """
 
-    transform = transforms.Compose([
+    return transforms.Compose([
         transforms.Resize((image_size, image_size)),
+
         transforms.ToTensor(),
+
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225]
         ),
     ])
-
-    return transform

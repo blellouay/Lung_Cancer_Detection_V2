@@ -1,0 +1,513 @@
+{
+    "model_info": {
+        "model_name": "CNNBaseline",
+        "architecture": "CNNBaseline(\n  (features): Sequential(\n    (0): Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    (1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)\n    (2): ReLU(inplace=True)\n    (3): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n    (4): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    (5): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)\n    (6): ReLU(inplace=True)\n    (7): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n    (8): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n    (9): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)\n    (10): ReLU(inplace=True)\n    (11): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n  )\n  (global_pool): AdaptiveAvgPool2d(output_size=(4, 4))\n  (classifier): Sequential(\n    (0): Flatten(start_dim=1, end_dim=-1)\n    (1): Linear(in_features=2048, out_features=256, bias=True)\n    (2): ReLU(inplace=True)\n    (3): Dropout(p=0.5, inplace=False)\n    (4): Linear(in_features=256, out_features=128, bias=True)\n    (5): ReLU(inplace=True)\n    (6): Dropout(p=0.5, inplace=False)\n    (7): Linear(in_features=128, out_features=4, bias=True)\n  )\n)",
+        "architecture_image": "results/baseline\\architecture.svg",
+        "architecture_image_format": "svg",
+        "total_parameters": 651652,
+        "trainable_parameters": 651652,
+        "input_size": [
+            1,
+            3,
+            224,
+            224
+        ],
+        "layers": [
+            {
+                "name": "features",
+                "type": "Sequential",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "Sequential(\n  (0): Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)\n  (2): ReLU(inplace=True)\n  (3): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n  (4): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (5): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)\n  (6): ReLU(inplace=True)\n  (7): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n  (8): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))\n  (9): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)\n  (10): ReLU(inplace=True)\n  (11): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)\n)",
+                "input_shape": [
+                    1,
+                    3,
+                    224,
+                    224
+                ],
+                "output_shape": [
+                    1,
+                    128,
+                    28,
+                    28
+                ]
+            },
+            {
+                "name": "features.0",
+                "type": "Conv2d",
+                "parameters": 896,
+                "trainable_parameters": 896,
+                "config": "Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+                "input_shape": [
+                    1,
+                    3,
+                    224,
+                    224
+                ],
+                "output_shape": [
+                    1,
+                    32,
+                    224,
+                    224
+                ]
+            },
+            {
+                "name": "features.1",
+                "type": "BatchNorm2d",
+                "parameters": 64,
+                "trainable_parameters": 64,
+                "config": "BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+                "input_shape": [
+                    1,
+                    32,
+                    224,
+                    224
+                ],
+                "output_shape": [
+                    1,
+                    32,
+                    224,
+                    224
+                ]
+            },
+            {
+                "name": "features.2",
+                "type": "ReLU",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "ReLU(inplace=True)",
+                "input_shape": [
+                    1,
+                    32,
+                    224,
+                    224
+                ],
+                "output_shape": [
+                    1,
+                    32,
+                    224,
+                    224
+                ]
+            },
+            {
+                "name": "features.3",
+                "type": "MaxPool2d",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)",
+                "input_shape": [
+                    1,
+                    32,
+                    224,
+                    224
+                ],
+                "output_shape": [
+                    1,
+                    32,
+                    112,
+                    112
+                ]
+            },
+            {
+                "name": "features.4",
+                "type": "Conv2d",
+                "parameters": 18496,
+                "trainable_parameters": 18496,
+                "config": "Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+                "input_shape": [
+                    1,
+                    32,
+                    112,
+                    112
+                ],
+                "output_shape": [
+                    1,
+                    64,
+                    112,
+                    112
+                ]
+            },
+            {
+                "name": "features.5",
+                "type": "BatchNorm2d",
+                "parameters": 128,
+                "trainable_parameters": 128,
+                "config": "BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+                "input_shape": [
+                    1,
+                    64,
+                    112,
+                    112
+                ],
+                "output_shape": [
+                    1,
+                    64,
+                    112,
+                    112
+                ]
+            },
+            {
+                "name": "features.6",
+                "type": "ReLU",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "ReLU(inplace=True)",
+                "input_shape": [
+                    1,
+                    64,
+                    112,
+                    112
+                ],
+                "output_shape": [
+                    1,
+                    64,
+                    112,
+                    112
+                ]
+            },
+            {
+                "name": "features.7",
+                "type": "MaxPool2d",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)",
+                "input_shape": [
+                    1,
+                    64,
+                    112,
+                    112
+                ],
+                "output_shape": [
+                    1,
+                    64,
+                    56,
+                    56
+                ]
+            },
+            {
+                "name": "features.8",
+                "type": "Conv2d",
+                "parameters": 73856,
+                "trainable_parameters": 73856,
+                "config": "Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+                "input_shape": [
+                    1,
+                    64,
+                    56,
+                    56
+                ],
+                "output_shape": [
+                    1,
+                    128,
+                    56,
+                    56
+                ]
+            },
+            {
+                "name": "features.9",
+                "type": "BatchNorm2d",
+                "parameters": 256,
+                "trainable_parameters": 256,
+                "config": "BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+                "input_shape": [
+                    1,
+                    128,
+                    56,
+                    56
+                ],
+                "output_shape": [
+                    1,
+                    128,
+                    56,
+                    56
+                ]
+            },
+            {
+                "name": "features.10",
+                "type": "ReLU",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "ReLU(inplace=True)",
+                "input_shape": [
+                    1,
+                    128,
+                    56,
+                    56
+                ],
+                "output_shape": [
+                    1,
+                    128,
+                    56,
+                    56
+                ]
+            },
+            {
+                "name": "features.11",
+                "type": "MaxPool2d",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)",
+                "input_shape": [
+                    1,
+                    128,
+                    56,
+                    56
+                ],
+                "output_shape": [
+                    1,
+                    128,
+                    28,
+                    28
+                ]
+            },
+            {
+                "name": "global_pool",
+                "type": "AdaptiveAvgPool2d",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "AdaptiveAvgPool2d(output_size=(4, 4))",
+                "input_shape": [
+                    1,
+                    128,
+                    28,
+                    28
+                ],
+                "output_shape": [
+                    1,
+                    128,
+                    4,
+                    4
+                ]
+            },
+            {
+                "name": "classifier",
+                "type": "Sequential",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "Sequential(\n  (0): Flatten(start_dim=1, end_dim=-1)\n  (1): Linear(in_features=2048, out_features=256, bias=True)\n  (2): ReLU(inplace=True)\n  (3): Dropout(p=0.5, inplace=False)\n  (4): Linear(in_features=256, out_features=128, bias=True)\n  (5): ReLU(inplace=True)\n  (6): Dropout(p=0.5, inplace=False)\n  (7): Linear(in_features=128, out_features=4, bias=True)\n)",
+                "input_shape": [
+                    1,
+                    128,
+                    4,
+                    4
+                ],
+                "output_shape": [
+                    1,
+                    4
+                ]
+            },
+            {
+                "name": "classifier.0",
+                "type": "Flatten",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "Flatten(start_dim=1, end_dim=-1)",
+                "input_shape": [
+                    1,
+                    128,
+                    4,
+                    4
+                ],
+                "output_shape": [
+                    1,
+                    2048
+                ]
+            },
+            {
+                "name": "classifier.1",
+                "type": "Linear",
+                "parameters": 524544,
+                "trainable_parameters": 524544,
+                "config": "Linear(in_features=2048, out_features=256, bias=True)",
+                "input_shape": [
+                    1,
+                    2048
+                ],
+                "output_shape": [
+                    1,
+                    256
+                ]
+            },
+            {
+                "name": "classifier.2",
+                "type": "ReLU",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "ReLU(inplace=True)",
+                "input_shape": [
+                    1,
+                    256
+                ],
+                "output_shape": [
+                    1,
+                    256
+                ]
+            },
+            {
+                "name": "classifier.3",
+                "type": "Dropout",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "Dropout(p=0.5, inplace=False)",
+                "input_shape": [
+                    1,
+                    256
+                ],
+                "output_shape": [
+                    1,
+                    256
+                ]
+            },
+            {
+                "name": "classifier.4",
+                "type": "Linear",
+                "parameters": 32896,
+                "trainable_parameters": 32896,
+                "config": "Linear(in_features=256, out_features=128, bias=True)",
+                "input_shape": [
+                    1,
+                    256
+                ],
+                "output_shape": [
+                    1,
+                    128
+                ]
+            },
+            {
+                "name": "classifier.5",
+                "type": "ReLU",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "ReLU(inplace=True)",
+                "input_shape": [
+                    1,
+                    128
+                ],
+                "output_shape": [
+                    1,
+                    128
+                ]
+            },
+            {
+                "name": "classifier.6",
+                "type": "Dropout",
+                "parameters": 0,
+                "trainable_parameters": 0,
+                "config": "Dropout(p=0.5, inplace=False)",
+                "input_shape": [
+                    1,
+                    128
+                ],
+                "output_shape": [
+                    1,
+                    128
+                ]
+            },
+            {
+                "name": "classifier.7",
+                "type": "Linear",
+                "parameters": 516,
+                "trainable_parameters": 516,
+                "config": "Linear(in_features=128, out_features=4, bias=True)",
+                "input_shape": [
+                    1,
+                    128
+                ],
+                "output_shape": [
+                    1,
+                    4
+                ]
+            }
+        ]
+    },
+    "evaluation_metrics": {
+        "accuracy": 0.46984126984126984,
+        "precision_macro": 0.5770707070707071,
+        "recall_macro": 0.5695669934640524,
+        "f1_macro": 0.5237004939460405,
+        "classification_report": "                         precision    recall  f1-score   support\n\n         adenocarcinoma       0.44      0.24      0.31       120\n   large.cell.carcinoma       0.25      0.73      0.37        51\n                 normal       1.00      1.00      1.00        54\nsquamous.cell.carcinoma       0.62      0.31      0.41        90\n\n               accuracy                           0.47       315\n              macro avg       0.58      0.57      0.52       315\n           weighted avg       0.56      0.47      0.47       315\n",
+        "confusion_matrix": [
+            [
+                29,
+                80,
+                0,
+                11
+            ],
+            [
+                8,
+                37,
+                0,
+                6
+            ],
+            [
+                0,
+                0,
+                54,
+                0
+            ],
+            [
+                29,
+                33,
+                0,
+                28
+            ]
+        ]
+    },
+    "deployment_info": {
+        "model_path": "results/baseline\\model.pth",
+        "input_size": [
+            3,
+            224,
+            224
+        ],
+        "image_size": 224,
+        "class_names": [
+            "adenocarcinoma",
+            "large.cell.carcinoma",
+            "normal",
+            "squamous.cell.carcinoma"
+        ],
+        "normalize_mean": [
+            0.485,
+            0.456,
+            0.406
+        ],
+        "normalize_std": [
+            0.229,
+            0.224,
+            0.225
+        ],
+        "deployment_ready": true,
+        "onnx_exported": false,
+        "gradcam_available": false,
+        "medical_thresholds": {
+            "minimum_recall": 0.85,
+            "current_recall": 0.5695669934640524,
+            "passes_recall_threshold": false
+        }
+    },
+    "training_config": {
+        "image_size": 224,
+        "batch_size": 32,
+        "epochs": 50,
+        "learning_rate": 0.0001,
+        "optimizer": "Adam",
+        "loss_function": "Weighted CrossEntropyLoss",
+        "class_names": [
+            "adenocarcinoma",
+            "large.cell.carcinoma",
+            "normal",
+            "squamous.cell.carcinoma"
+        ],
+        "normalize_mean": [
+            0.485,
+            0.456,
+            0.406
+        ],
+        "normalize_std": [
+            0.229,
+            0.224,
+            0.225
+        ]
+    }
+}
