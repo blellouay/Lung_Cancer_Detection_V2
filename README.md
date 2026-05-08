@@ -59,9 +59,6 @@ The platform combines:
 ### Transfer Learning Models
 
 * ResNet18Transfer
-* VGG16Transfer
-* MobileNetV2Transfer
-* EfficientNetB0Transfer
 * InceptionV3Transfer
 
 ---
