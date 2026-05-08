@@ -25,6 +25,31 @@ DEFAULT_NORMALIZE_MEAN = [0.485, 0.456, 0.406]
 DEFAULT_NORMALIZE_STD = [0.229, 0.224, 0.225]
 DEFAULT_IMAGE_SIZE = 224
 
+CUSTOM_PRIORITY_COLUMNS = [
+    "f1_macro",
+    "recall_macro",
+    "min_per_class_recall",
+    "accuracy"
+]
+
+PREDICTION_MODEL_NAMES = {
+    "CNNBaseline",
+    "ResNetScratch",
+    "ResNet18Scratch",
+    "ResNet18",
+    "ResNet18Transfer",
+    "ResNetTransfer",
+    "VGG16Scratch",
+    "VGG16",
+    "MobileNetV2Scratch",
+    "EfficientNetB0Scratch",
+    "EfficientNetB0",
+    "EfficientNet",
+    "InceptionV3Transfer",
+    "InceptionV3",
+    "Inception"
+}
+
 
 # =========================
 # PAGE CONFIG
@@ -132,6 +157,101 @@ def load_single_result(path):
         return json.load(f)
 
 
+def resolve_project_path(path):
+    if not path:
+        return None
+
+    if os.path.isabs(path):
+        return path
+
+    return os.path.join(PROJECT_ROOT, path)
+
+
+def get_class_names(data):
+    deployment_info = data.get("deployment_info", {})
+    config = data.get("training_config", {})
+
+    return (
+        deployment_info.get("class_names")
+        or config.get("class_names")
+        or DEFAULT_CLASS_NAMES
+    )
+
+
+def get_per_class_recall(metrics, class_names):
+    per_class_recall = metrics.get("per_class_recall")
+
+    if per_class_recall:
+        return {
+            class_name: float(per_class_recall.get(class_name, 0))
+            for class_name in class_names
+        }
+
+    cm = metrics.get("confusion_matrix")
+    if not cm:
+        return {}
+
+    recalls = {}
+    for i, class_name in enumerate(class_names):
+        if i >= len(cm):
+            recalls[class_name] = 0.0
+            continue
+
+        row_total = sum(cm[i])
+        true_positive = cm[i][i] if i < len(cm[i]) else 0
+        recalls[class_name] = float(true_positive / row_total) if row_total else 0.0
+
+    return recalls
+
+
+def get_minimum_recall_info(metrics, class_names):
+    per_class_recall = get_per_class_recall(metrics, class_names)
+
+    if not per_class_recall:
+        return None, None
+
+    weakest_class, weakest_recall = min(
+        per_class_recall.items(),
+        key=lambda item: item[1]
+    )
+
+    return float(weakest_recall), weakest_class
+
+
+def model_path_exists(data, result_path):
+    deployment_info = data.get("deployment_info", {})
+    model_path = deployment_info.get("model_path")
+
+    if model_path is None:
+        model_path = os.path.join(os.path.dirname(result_path), "model.pth")
+    else:
+        model_path = resolve_project_path(model_path)
+
+    return bool(model_path and os.path.exists(model_path))
+
+
+def gradcam_available(data):
+    deployment_info = data.get("deployment_info", {})
+    metrics = data.get("evaluation_metrics", {})
+
+    return bool(
+        deployment_info.get("gradcam_available")
+        or metrics.get("gradcam_paths")
+    )
+
+
+def prediction_demo_ready(data, result_path):
+    model_info = data.get("model_info", {})
+    class_names = get_class_names(data)
+    model_name = model_info.get("model_name")
+
+    return bool(
+        model_path_exists(data, result_path)
+        and class_names
+        and model_name in PREDICTION_MODEL_NAMES
+    )
+
+
 def load_results(json_files):
     rows = []
 
@@ -141,21 +261,56 @@ def load_results(json_files):
         model_info = data.get("model_info", {})
         metrics = data.get("evaluation_metrics", {})
         config = data.get("training_config", {})
+        class_names = get_class_names(data)
+        min_recall, weakest_class = get_minimum_recall_info(metrics, class_names)
+
+        # Result folder containing test_metrics.json
+        run_dir = os.path.dirname(path)
+
+        history_path = os.path.join(run_dir, "training_history.json")
+        loss_curve_path = os.path.join(run_dir, "loss_curve.png")
+        accuracy_curve_path = os.path.join(run_dir, "accuracy_curve.png")
 
         rows.append({
             "run_path": path,
+            "run_dir": run_dir,
+
             "model_name": model_info.get("model_name", "Unknown"),
+
             "accuracy": metrics.get("accuracy"),
             "precision_macro": metrics.get("precision_macro"),
             "recall_macro": metrics.get("recall_macro"),
             "f1_macro": metrics.get("f1_macro"),
+
+            "min_per_class_recall": min_recall,
+            "weakest_class": weakest_class,
+
             "total_parameters": model_info.get("total_parameters"),
             "trainable_parameters": model_info.get("trainable_parameters"),
+
             "batch_size": config.get("batch_size"),
             "epochs": config.get("epochs"),
+            "best_epoch": config.get("best_epoch"),
             "learning_rate": config.get("learning_rate"),
             "optimizer": config.get("optimizer"),
             "loss_function": config.get("loss_function"),
+            "focal_gamma": config.get("focal_gamma"),
+            "sampler": config.get("sampler"),
+            "early_stopping": config.get("early_stopping"),
+
+            "model_pth_exists": model_path_exists(data, path),
+            "class_names_saved": bool(class_names),
+            "gradcam_available": gradcam_available(data),
+            "prediction_demo_ready": prediction_demo_ready(data, path),
+
+            # Training curve files
+            "history_path": history_path if os.path.exists(history_path) else None,
+            "loss_curve_path": loss_curve_path if os.path.exists(loss_curve_path) else None,
+            "accuracy_curve_path": accuracy_curve_path if os.path.exists(accuracy_curve_path) else None,
+            "training_curves_available": (
+                os.path.exists(loss_curve_path)
+                and os.path.exists(accuracy_curve_path)
+            )
         })
 
     return pd.DataFrame(rows)
@@ -175,8 +330,8 @@ def get_deployment_info(data, result_path):
     model_path = deployment_info.get("model_path")
     if model_path is None:
         model_path = os.path.join(os.path.dirname(result_path), "model.pth")
-    elif not os.path.isabs(model_path):
-        model_path = os.path.join(PROJECT_ROOT, model_path)
+    else:
+        model_path = resolve_project_path(model_path)
 
     return {
         **deployment_info,
@@ -204,6 +359,63 @@ def get_deployment_info(data, result_path):
 # =========================
 # UI FUNCTIONS
 # =========================
+def show_training_curves(selected_data):
+    st.subheader("Training Curves")
+
+    loss_curve = selected_data.get("loss_curve_path")
+    acc_curve = selected_data.get("accuracy_curve_path")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if loss_curve and os.path.exists(loss_curve):
+            st.image(loss_curve, caption="Loss Curve", use_container_width=True)
+        else:
+            st.info("Loss curve not available.")
+
+    with col2:
+        if acc_curve and os.path.exists(acc_curve):
+            st.image(acc_curve, caption="Accuracy Curve", use_container_width=True)
+        else:
+            st.info("Accuracy curve not available.")
+            
+def show_per_class_recall(metrics, class_names=None, threshold=0.50):
+    st.subheader("Per-Class Recall")
+
+    class_names = class_names or DEFAULT_CLASS_NAMES
+    per_class_recall = get_per_class_recall(metrics, class_names)
+
+    if not per_class_recall:
+        st.info("No per-class recall found. Re-save evaluation results with per_class_recall or confusion_matrix.")
+        return
+
+    recall_df = pd.DataFrame(
+        list(per_class_recall.items()),
+        columns=["Class", "Recall"]
+    )
+    recall_df = recall_df.sort_values("Recall", ascending=True)
+
+    recall_df["Recall (%)"] = recall_df["Recall"] * 100
+    recall_df["Status"] = recall_df["Recall"].apply(
+        lambda x: "⚠️ Low" if x < threshold else "✅ Good"
+    )
+
+    weakest = recall_df.iloc[0]
+    st.warning(
+        f"Weakest class: {weakest['Class']} "
+        f"({weakest['Recall']:.4f} recall)."
+    )
+
+    st.dataframe(
+        recall_df[["Class", "Recall (%)", "Status"]],
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.bar_chart(
+        recall_df.set_index("Class")["Recall (%)"]
+    )
+
 def title_block(title, subtitle):
     st.markdown(f"<div class='main-title'>{title}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='subtitle'>{subtitle}</div>", unsafe_allow_html=True)
@@ -223,6 +435,59 @@ def metric_card(label, value):
 
 def unique_columns(cols):
     return list(dict.fromkeys(cols))
+
+
+def sort_by_custom_priority(dataframe):
+    return dataframe.sort_values(
+        by=CUSTOM_PRIORITY_COLUMNS,
+        ascending=[False, False, False, False],
+        na_position="last"
+    )
+
+
+def show_training_strategy(config):
+    st.subheader("Training Strategy")
+
+    strategy_df = pd.DataFrame(
+        [
+            ["Loss", config.get("loss_function", "Not saved")],
+            ["Focal gamma", config.get("focal_gamma", "Not saved")],
+            ["Sampler", config.get("sampler", "Not saved")],
+            ["Early stopping", config.get("early_stopping", "Not saved")],
+            ["Best epoch", config.get("best_epoch", "Not saved")],
+            ["Epochs", config.get("epochs", "Not saved")],
+            ["Optimizer", config.get("optimizer", "Not saved")],
+            ["Learning rate", config.get("learning_rate", "Not saved")],
+        ],
+        columns=["Item", "Value"]
+    )
+
+    st.dataframe(strategy_df, use_container_width=True, hide_index=True)
+
+
+def show_deployment_readiness(data, result_path):
+    st.subheader("Deployment Readiness")
+
+    class_names = get_class_names(data)
+    readiness_df = pd.DataFrame(
+        [
+            ["model.pth exists", model_path_exists(data, result_path)],
+            ["class_names saved", bool(class_names)],
+            ["Grad-CAM available", gradcam_available(data)],
+            ["prediction demo ready", prediction_demo_ready(data, result_path)],
+        ],
+        columns=["Check", "Ready"]
+    )
+
+    readiness_df["Status"] = readiness_df["Ready"].apply(
+        lambda ready: "Ready" if ready else "Missing"
+    )
+
+    st.dataframe(
+        readiness_df[["Check", "Status"]],
+        use_container_width=True,
+        hide_index=True
+    )
 
 
 def medical_warning(recall):
@@ -486,7 +751,14 @@ st.sidebar.write(f"Detected runs: {len(df)}")
 
 priority_metric_sidebar = st.sidebar.selectbox(
     "Medical priority metric",
-    ["recall_macro", "f1_macro", "accuracy", "precision_macro"]
+    [
+        "custom_medical_priority",
+        "f1_macro",
+        "recall_macro",
+        "min_per_class_recall",
+        "accuracy",
+        "precision_macro"
+    ]
 )
 
 # =========================
@@ -500,7 +772,7 @@ if page == "📊 Compare All Models":
         "Overview of all saved model evaluation results."
     )
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         metric_card("Total Runs", len(df))
@@ -512,6 +784,9 @@ if page == "📊 Compare All Models":
         metric_card("Best F1", f"{df['f1_macro'].max():.4f}")
 
     with col4:
+        metric_card("Best Min Recall", f"{df['min_per_class_recall'].max():.4f}")
+
+    with col5:
         metric_card("Best Accuracy", f"{df['accuracy'].max():.4f}")
 
     st.markdown("---")
@@ -529,11 +804,22 @@ if page == "📊 Compare All Models":
             "precision_macro",
             "recall_macro",
             "f1_macro",
+            "min_per_class_recall",
+            "weakest_class",
             "total_parameters",
             "batch_size",
             "epochs",
+            "best_epoch",
             "learning_rate",
-            "optimizer"
+            "optimizer",
+            "loss_function",
+            "focal_gamma",
+            "sampler",
+            "early_stopping",
+            "model_pth_exists",
+            "class_names_saved",
+            "gradcam_available",
+            "prediction_demo_ready"
         ]
 
         st.dataframe(
@@ -545,22 +831,40 @@ if page == "📊 Compare All Models":
     with tab2:
         metric_choice = st.selectbox(
             "Choose metric",
-            ["recall_macro", "f1_macro", "accuracy", "precision_macro"]
+            [
+                "custom_medical_priority",
+                "f1_macro",
+                "recall_macro",
+                "min_per_class_recall",
+                "accuracy",
+                "precision_macro"
+            ]
         )
 
-        sorted_df = df.sort_values(by=metric_choice, ascending=False)
+        if metric_choice == "custom_medical_priority":
+            sorted_df = sort_by_custom_priority(df)
+            chart_metric = "f1_macro"
+            st.caption(
+                "Custom priority ranks by macro F1, then macro recall, "
+                "then minimum per-class recall, then accuracy."
+            )
+        else:
+            sorted_df = df.sort_values(by=metric_choice, ascending=False)
+            chart_metric = metric_choice
 
         st.bar_chart(
-            sorted_df.set_index("model_name")[metric_choice]
+            sorted_df.set_index("model_name")[chart_metric]
         )
 
         ranking_cols = unique_columns([
             "model_name",
-            metric_choice,
+            chart_metric,
             "accuracy",
             "precision_macro",
             "recall_macro",
-            "f1_macro"
+            "f1_macro",
+            "min_per_class_recall",
+            "weakest_class"
         ])
 
         st.dataframe(
@@ -596,13 +900,17 @@ elif page == "🏆 Best Model":
 
     title_block(
         "Best Model",
-        "The best model is selected using the chosen priority metric."
+        "The best model is selected by medical priority, not accuracy alone."
     )
 
-    best_row = df.sort_values(
-        by=priority_metric_sidebar,
-        ascending=False
-    ).iloc[0]
+    if priority_metric_sidebar == "custom_medical_priority":
+        ranked_df = sort_by_custom_priority(df)
+        priority_label = "macro F1, macro recall, minimum per-class recall"
+    else:
+        ranked_df = df.sort_values(by=priority_metric_sidebar, ascending=False)
+        priority_label = priority_metric_sidebar
+
+    best_row = ranked_df.iloc[0]
 
     selected_data = load_single_result(best_row["run_path"])
 
@@ -613,7 +921,7 @@ elif page == "🏆 Best Model":
     st.markdown(
         f"""
         <div class="success-box">
-            🏆 Best model based on <b>{priority_metric_sidebar}</b>:
+            Best model based on <b>{priority_label}</b>:
             {best_row['model_name']}
         </div>
         """,
@@ -622,7 +930,27 @@ elif page == "🏆 Best Model":
 
     st.markdown("")
 
-    col1, col2, col3, col4 = st.columns(4)
+    st.caption(
+        "Custom priority ranks by macro F1, then macro recall, "
+        "then minimum per-class recall, then accuracy."
+    )
+
+    st.dataframe(
+        ranked_df[
+            [
+                "model_name",
+                "f1_macro",
+                "recall_macro",
+                "min_per_class_recall",
+                "weakest_class",
+                "accuracy"
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True
+    )
+
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         metric_card("Accuracy", f"{metrics.get('accuracy', 0):.4f}")
@@ -636,15 +964,26 @@ elif page == "🏆 Best Model":
     with col4:
         metric_card("F1 Macro", f"{metrics.get('f1_macro', 0):.4f}")
 
+    min_recall, _ = get_minimum_recall_info(
+        metrics,
+        get_class_names(selected_data)
+    )
+    with col5:
+        metric_card(
+            "Minimum Recall",
+            f"{min_recall:.4f}" if min_recall is not None else "N/A"
+        )
+
     st.markdown("---")
     medical_warning(metrics.get("recall_macro"))
     st.markdown("---")
 
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "Model Details",
         "Confusion Matrix",
         "Classification Report",
-        "Architecture"
+        "Architecture",
+        "Training Curves"
     ])
 
     with tab1:
@@ -658,12 +997,8 @@ elif page == "🏆 Best Model":
             st.write(f"**Result file:** {best_row['run_path']}")
 
         with right:
-            st.subheader("Training Config")
-            st.write(f"**Batch size:** {config.get('batch_size')}")
-            st.write(f"**Epochs:** {config.get('epochs')}")
-            st.write(f"**Learning rate:** {config.get('learning_rate')}")
-            st.write(f"**Optimizer:** {config.get('optimizer')}")
-            st.write(f"**Loss function:** {config.get('loss_function')}")
+            show_training_strategy(config)
+            show_deployment_readiness(selected_data, best_row["run_path"])
 
     with tab2:
         if "confusion_matrix" in metrics:
@@ -676,9 +1011,14 @@ elif page == "🏆 Best Model":
             st.text(metrics["classification_report"])
         else:
             st.info("No classification report available.")
+        show_per_class_recall(metrics, get_class_names(selected_data))
 
     with tab4:
         show_architecture_section(model_info)
+
+    with tab5:
+        show_training_curves(best_row)
+
 
 # =========================
 # PAGE 3: INDIVIDUAL MODEL
@@ -702,7 +1042,7 @@ elif page == "🔍 Individual Model":
     metrics = selected_data.get("evaluation_metrics", {})
     config = selected_data.get("training_config", {})
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         metric_card("Accuracy", f"{metrics.get('accuracy', 0):.4f}")
@@ -716,16 +1056,29 @@ elif page == "🔍 Individual Model":
     with col4:
         metric_card("F1 Macro", f"{metrics.get('f1_macro', 0):.4f}")
 
+    min_recall, _ = get_minimum_recall_info(
+        metrics,
+        get_class_names(selected_data)
+    )
+    with col5:
+        metric_card(
+            "Minimum Recall",
+            f"{min_recall:.4f}" if min_recall is not None else "N/A"
+        )
+
     st.markdown("---")
     medical_warning(metrics.get("recall_macro"))
     st.markdown("---")
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 , tab7= st.tabs([
         "Model Info",
         "Confusion Matrix",
         "Classification Report",
         "Training Config",
-        "Architecture"
+        "Deployment",
+        "Architecture",
+        "Training Curves"
+
     ])
 
     with tab1:
@@ -746,12 +1099,19 @@ elif page == "🔍 Individual Model":
             st.text(metrics["classification_report"])
         else:
             st.info("No classification report available.")
+        show_per_class_recall(metrics, get_class_names(selected_data))
 
     with tab4:
-        st.json(config)
+        show_training_strategy(config)
 
     with tab5:
+        show_deployment_readiness(selected_data, selected_path)
+
+    with tab6:
         show_architecture_section(model_info)
+        
+    with tab5:
+        show_training_curves(best_row)
 
 # =========================
 # PAGE 4: PREDICTION DEMO
@@ -787,6 +1147,8 @@ elif page == "🚀 Prediction Demo":
         st.write(f"**Class names:** {deployment_info.get('class_names')}")
         st.write(f"**Mean:** {deployment_info.get('normalize_mean')}")
         st.write(f"**Std:** {deployment_info.get('normalize_std')}")
+
+    show_deployment_readiness(selected_data, selected_path)
 
     st.markdown("---")
 

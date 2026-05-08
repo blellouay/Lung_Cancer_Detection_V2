@@ -12,14 +12,27 @@ def get_model_registry():
     from src.model.cnn_baseline import CNNBaseline
     from src.model.resnet import ResNet18Scratch
     from src.model.vgg16 import VGG16Scratch
+    from src.model.mobilenetv2_scratch import MobileNetV2Scratch
+    from src.model.efficientnet_b0 import EfficientNetB0Scratch
+    from src.model.resnet18_transfer import ResNet18Transfer
+    from src.model.inception_v3_transfer import InceptionV3Transfer
 
     return {
         "CNNBaseline": CNNBaseline,
         "ResNetScratch": ResNet18Scratch,
         "ResNet18Scratch": ResNet18Scratch,
         "ResNet18": ResNet18Scratch,
+        "ResNet18Transfer": ResNet18Transfer,
+        "ResNetTransfer": ResNet18Transfer,
         "VGG16Scratch": VGG16Scratch,
         "VGG16": VGG16Scratch,
+        "MobileNetV2Scratch": MobileNetV2Scratch,
+        "EfficientNetB0Scratch": EfficientNetB0Scratch,
+        "EfficientNetB0": EfficientNetB0Scratch,
+        "EfficientNet": EfficientNetB0Scratch,
+        "InceptionV3Transfer": InceptionV3Transfer,
+        "InceptionV3": InceptionV3Transfer,
+        "Inception": InceptionV3Transfer,
     }
 
 
@@ -37,6 +50,8 @@ def build_model(model_name: str, num_classes: int, model_kwargs: dict = None):
     model_kwargs = model_kwargs or {}
 
     model_class = registry[model_name]
+    if model_class.__name__ in {"ResNet18Transfer", "InceptionV3Transfer"}:
+        model_kwargs.setdefault("pretrained", False)
 
     return model_class(
         num_classes=num_classes,
