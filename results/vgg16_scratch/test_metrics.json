@@ -1029,52 +1029,52 @@
         ]
     },
     "evaluation_metrics": {
-        "accuracy": 0.5619047619047619,
-        "precision_macro": 0.7257142857142856,
-        "recall_macro": 0.6788398692810458,
-        "f1_macro": 0.5657967032967033,
-        "classification_report": "                         precision    recall  f1-score   support\n\n         adenocarcinoma       1.00      0.05      0.10       120\n   large.cell.carcinoma       0.41      0.84      0.55        51\n                 normal       1.00      1.00      1.00        54\nsquamous.cell.carcinoma       0.49      0.82      0.62        90\n\n               accuracy                           0.56       315\n              macro avg       0.73      0.68      0.57       315\n           weighted avg       0.76      0.56      0.47       315\n",
+        "accuracy": 0.6571428571428571,
+        "precision_macro": 0.7360762240072585,
+        "recall_macro": 0.7296023965141613,
+        "f1_macro": 0.6824841082216968,
+        "classification_report": "                         precision    recall  f1-score   support\n\n         adenocarcinoma       0.90      0.32      0.47       120\n   large.cell.carcinoma       0.53      0.76      0.62        51\n                 normal       0.98      0.98      0.98        54\nsquamous.cell.carcinoma       0.53      0.86      0.66        90\n\n               accuracy                           0.66       315\n              macro avg       0.74      0.73      0.68       315\n           weighted avg       0.75      0.66      0.64       315\n",
         "confusion_matrix": [
             [
-                6,
-                46,
-                0,
-                68
+                38,
+                25,
+                1,
+                56
             ],
             [
                 0,
-                43,
+                39,
                 0,
-                8
+                12
             ],
             [
+                1,
                 0,
-                0,
-                54,
+                53,
                 0
             ],
             [
+                3,
+                10,
                 0,
-                16,
-                0,
-                74
+                77
             ]
         ],
         "per_class_recall": {
-            "adenocarcinoma": 0.05,
-            "large.cell.carcinoma": 0.8431372549019608,
-            "normal": 1.0,
-            "squamous.cell.carcinoma": 0.8222222222222222
+            "adenocarcinoma": 0.31666666666666665,
+            "large.cell.carcinoma": 0.7647058823529411,
+            "normal": 0.9814814814814815,
+            "squamous.cell.carcinoma": 0.8555555555555555
         },
         "gradcam_paths": [
-            "results/vgg16_scratch/gradcam\\gradcam_0_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
-            "results/vgg16_scratch/gradcam\\gradcam_1_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
-            "results/vgg16_scratch/gradcam\\gradcam_2_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
-            "results/vgg16_scratch/gradcam\\gradcam_3_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
-            "results/vgg16_scratch/gradcam\\gradcam_4_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
-            "results/vgg16_scratch/gradcam\\gradcam_5_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
-            "results/vgg16_scratch/gradcam\\gradcam_6_true_adenocarcinoma_pred_adenocarcinoma.png",
-            "results/vgg16_scratch/gradcam\\gradcam_7_true_adenocarcinoma_pred_squamous.cell.carcinoma.png"
+            "results/vgg16_scratch\\gradcam\\gradcam_0_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/vgg16_scratch\\gradcam\\gradcam_1_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/vgg16_scratch\\gradcam\\gradcam_2_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/vgg16_scratch\\gradcam\\gradcam_3_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
+            "results/vgg16_scratch\\gradcam\\gradcam_4_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/vgg16_scratch\\gradcam\\gradcam_5_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
+            "results/vgg16_scratch\\gradcam\\gradcam_6_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/vgg16_scratch\\gradcam\\gradcam_7_true_adenocarcinoma_pred_squamous.cell.carcinoma.png"
         ]
     },
     "deployment_info": {
@@ -1104,9 +1104,17 @@
         "deployment_ready": true,
         "onnx_exported": false,
         "gradcam_available": true,
+        "prediction_demo_ready": true,
+        "readiness_checks": {
+            "model_pth_exists": true,
+            "class_names_saved": true,
+            "gradcam_available": true,
+            "prediction_demo_ready": true
+        },
         "medical_thresholds": {
             "minimum_recall": 0.85,
-            "current_recall": 0.6788398692810458,
+            "current_recall": 0.7296023965141613,
+            "minimum_per_class_recall": 0.31666666666666665,
             "passes_recall_threshold": false
         }
     },
@@ -1115,8 +1123,8 @@
         "image_size": 224,
         "batch_size": 32,
         "epochs": 50,
-        "best_epoch": 12,
-        "best_valid_loss": 0.4303828709655338,
+        "best_epoch": 30,
+        "best_valid_loss": 0.40117494927512276,
         "learning_rate": 0.0001,
         "optimizer": "Adam",
         "weight_decay": 0.0001,

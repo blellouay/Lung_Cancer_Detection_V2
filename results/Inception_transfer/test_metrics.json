@@ -5721,52 +5721,52 @@
         ]
     },
     "evaluation_metrics": {
-        "accuracy": 0.5523809523809524,
-        "precision_macro": 0.5748253842516138,
-        "recall_macro": 0.618014705882353,
-        "f1_macro": 0.5819024970414481,
-        "classification_report": "                         precision    recall  f1-score   support\n\n         adenocarcinoma       0.58      0.36      0.44       120\n   large.cell.carcinoma       0.41      0.65      0.50        51\n                 normal       0.84      0.94      0.89        54\nsquamous.cell.carcinoma       0.47      0.52      0.50        90\n\n               accuracy                           0.55       315\n              macro avg       0.57      0.62      0.58       315\n           weighted avg       0.57      0.55      0.54       315\n",
+        "accuracy": 0.5396825396825397,
+        "precision_macro": 0.5793826328393252,
+        "recall_macro": 0.6014978213507625,
+        "f1_macro": 0.5703697747041401,
+        "classification_report": "                         precision    recall  f1-score   support\n\n         adenocarcinoma       0.56      0.42      0.48       120\n   large.cell.carcinoma       0.30      0.61      0.40        51\n                 normal       0.88      0.98      0.93        54\nsquamous.cell.carcinoma       0.57      0.40      0.47        90\n\n               accuracy                           0.54       315\n              macro avg       0.58      0.60      0.57       315\n           weighted avg       0.58      0.54      0.54       315\n",
         "confusion_matrix": [
             [
-                43,
-                34,
-                2,
-                41
+                50,
+                49,
+                1,
+                20
             ],
             [
-                7,
-                33,
+                13,
+                31,
                 0,
-                11
+                7
             ],
             [
-                3,
+                1,
                 0,
-                51,
+                53,
                 0
             ],
             [
-                21,
-                14,
-                8,
-                47
+                25,
+                23,
+                6,
+                36
             ]
         ],
         "per_class_recall": {
-            "adenocarcinoma": 0.35833333333333334,
-            "large.cell.carcinoma": 0.6470588235294118,
-            "normal": 0.9444444444444444,
-            "squamous.cell.carcinoma": 0.5222222222222223
+            "adenocarcinoma": 0.4166666666666667,
+            "large.cell.carcinoma": 0.6078431372549019,
+            "normal": 0.9814814814814815,
+            "squamous.cell.carcinoma": 0.4
         },
         "gradcam_paths": [
-            "results/Inception_transfer/gradcam\\gradcam_0_true_adenocarcinoma_pred_adenocarcinoma.png",
-            "results/Inception_transfer/gradcam\\gradcam_1_true_adenocarcinoma_pred_adenocarcinoma.png",
-            "results/Inception_transfer/gradcam\\gradcam_2_true_adenocarcinoma_pred_large.cell.carcinoma.png",
-            "results/Inception_transfer/gradcam\\gradcam_3_true_adenocarcinoma_pred_squamous.cell.carcinoma.png",
-            "results/Inception_transfer/gradcam\\gradcam_4_true_adenocarcinoma_pred_large.cell.carcinoma.png",
-            "results/Inception_transfer/gradcam\\gradcam_5_true_adenocarcinoma_pred_large.cell.carcinoma.png",
-            "results/Inception_transfer/gradcam\\gradcam_6_true_adenocarcinoma_pred_adenocarcinoma.png",
-            "results/Inception_transfer/gradcam\\gradcam_7_true_adenocarcinoma_pred_squamous.cell.carcinoma.png"
+            "results/Inception_transfer\\gradcam\\gradcam_0_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/Inception_transfer\\gradcam\\gradcam_1_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/Inception_transfer\\gradcam\\gradcam_2_true_adenocarcinoma_pred_large.cell.carcinoma.png",
+            "results/Inception_transfer\\gradcam\\gradcam_3_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/Inception_transfer\\gradcam\\gradcam_4_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/Inception_transfer\\gradcam\\gradcam_5_true_adenocarcinoma_pred_large.cell.carcinoma.png",
+            "results/Inception_transfer\\gradcam\\gradcam_6_true_adenocarcinoma_pred_adenocarcinoma.png",
+            "results/Inception_transfer\\gradcam\\gradcam_7_true_adenocarcinoma_pred_adenocarcinoma.png"
         ]
     },
     "deployment_info": {
@@ -5805,18 +5805,18 @@
         },
         "medical_thresholds": {
             "minimum_recall": 0.85,
-            "current_recall": 0.618014705882353,
-            "minimum_per_class_recall": 0.35833333333333334,
+            "current_recall": 0.6014978213507625,
+            "minimum_per_class_recall": 0.4,
             "passes_recall_threshold": false
         }
     },
     "training_config": {
-        "model_name": "Baseline",
+        "model_name": "MobileNet",
         "image_size": 224,
         "batch_size": 32,
         "epochs": 50,
-        "best_epoch": 7,
-        "best_valid_loss": 0.6596745649973551,
+        "best_epoch": 6,
+        "best_valid_loss": 0.6694876750310262,
         "learning_rate": 0.0001,
         "optimizer": "Adam",
         "weight_decay": 0.0001,
@@ -5828,7 +5828,7 @@
         "sampler": "WeightedRandomSampler",
         "balanced_training": true,
         "early_stopping": true,
-        "patience": 5,
+        "patience": 7,
         "min_delta": 0.0001,
         "dropout": 0.5,
         "class_names": [
