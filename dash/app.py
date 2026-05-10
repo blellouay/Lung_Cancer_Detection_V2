@@ -42,7 +42,12 @@ PREDICTION_MODEL_NAMES = {
     "ResNet18", "ResNet18Transfer", "ResNetTransfer",
     "VGG16Scratch", "VGG16", "MobileNetV2Scratch",
     "EfficientNetB0Scratch", "EfficientNetB0", "EfficientNet",
+    "EfficientNetB3Transfer",
     "InceptionV3Transfer", "InceptionV3", "Inception"
+}
+
+MODEL_NAME_ALIASES = {
+    "EfficientNetB3": "EfficientNetB3Transfer",
 }
 
 # ─────────────────────────────────────────────
@@ -749,9 +754,19 @@ def find_json_files(base_dir):
     return json_files
 
 
+def normalize_model_name(model_name):
+    return MODEL_NAME_ALIASES.get(model_name, model_name)
+
+
 def load_single_result(path):
     with open(path, "r") as f:
-        return json.load(f)
+        data = json.load(f)
+
+    mi = data.get("model_info")
+    if isinstance(mi, dict):
+        mi["model_name"] = normalize_model_name(mi.get("model_name"))
+
+    return data
 
 
 def resolve_project_path(path):
