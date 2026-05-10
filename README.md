@@ -424,6 +424,8 @@ jupyter notebook start.ipynb
 
 ---
 
-# Author
+# Authors
 
-Developed as a complete medical imaging AI research and deployment project.
+ - Louay Blel
+ - Ahmed Bouzidi
+ - Yessine Friaa
