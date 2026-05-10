@@ -16,6 +16,7 @@ def get_model_registry():
     from src.model.efficientnet_b0 import EfficientNetB0Scratch
     from src.model.resnet18_transfer import ResNet18Transfer
     from src.model.inception_v3_transfer import InceptionV3Transfer
+    from src.model.efficientnetb3 import EfficientNetB3
 
     return {
         "CNNBaseline": CNNBaseline,
@@ -33,6 +34,7 @@ def get_model_registry():
         "InceptionV3Transfer": InceptionV3Transfer,
         "InceptionV3": InceptionV3Transfer,
         "Inception": InceptionV3Transfer,
+        "EfficientNetB3Transfer": EfficientNetB3
     }
 
 
@@ -50,7 +52,7 @@ def build_model(model_name: str, num_classes: int, model_kwargs: dict = None):
     model_kwargs = model_kwargs or {}
 
     model_class = registry[model_name]
-    if model_class.__name__ in {"ResNet18Transfer", "InceptionV3Transfer"}:
+    if model_class.__name__ in {"ResNet18Transfer", "InceptionV3Transfer", "EfficientNetB3"}:
         model_kwargs.setdefault("pretrained", False)
 
     return model_class(

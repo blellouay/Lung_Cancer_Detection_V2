@@ -1031,8 +1031,8 @@
     "evaluation_metrics": {
         "accuracy": 0.6571428571428571,
         "precision_macro": 0.7360762240072585,
-        "recall_macro": 0.7296023965141613,
-        "f1_macro": 0.6824841082216968,
+        "recall_macro": 0.6996023965141613,
+        "f1_macro": 0.6524841082216968,
         "classification_report": "                         precision    recall  f1-score   support\n\n         adenocarcinoma       0.90      0.32      0.47       120\n   large.cell.carcinoma       0.53      0.76      0.62        51\n                 normal       0.98      0.98      0.98        54\nsquamous.cell.carcinoma       0.53      0.86      0.66        90\n\n               accuracy                           0.66       315\n              macro avg       0.74      0.73      0.68       315\n           weighted avg       0.75      0.66      0.64       315\n",
         "confusion_matrix": [
             [
