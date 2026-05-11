@@ -156,6 +156,7 @@ Implemented models include:
 - `EfficientNetB0Scratch`
 - `EfficientNetB3`
 - `InceptionV3Transfer`
+- `InceptionV1Scratch`
 
 The prediction dashboard loads models through the registry in:
 
