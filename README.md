@@ -410,7 +410,7 @@ jupyter notebook start.ipynb
 3. Make sure its final output has shape `[batch_size, num_classes]`.
 4. Add support in `src/utils/model_outputs.py` if it returns auxiliary outputs.
 5. Register it in `src/deployment/model_loader.py`.
-6. Train and evaluate it from `start.ipynb`.
+6. Train and evaluate it from `Main.ipynb`.
 7. Save results using `save_evaluation_results(...)`.
 8. Confirm it appears in the Streamlit dashboard.
 
